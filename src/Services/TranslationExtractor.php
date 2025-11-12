@@ -121,19 +121,18 @@ class TranslationExtractor
     public function saveTranslations(array $translations, string $locale = null): string
     {
         $locale = $locale ?? $this->config['locale'];
-        $fileName = $this->config['file_name'];
-        
-        $langPath = lang_path($locale);
-        $filePath = $langPath . DIRECTORY_SEPARATOR . $fileName;
+        $filePath = lang_path($locale . '.json');
 
-        // Create directory if it doesn't exist
+        // Create lang directory if it doesn't exist
+        $langPath = dirname($filePath);
         if (!$this->files->isDirectory($langPath)) {
             $this->files->makeDirectory($langPath, 0755, true);
         }
 
         // Load existing translations if preserve is enabled
         if ($this->config['preserve_existing'] && $this->files->exists($filePath)) {
-            $existing = include $filePath;
+            $existingContent = $this->files->get($filePath);
+            $existing = json_decode($existingContent, true);
             if (is_array($existing)) {
                 // Merge: existing translations take precedence
                 $translations = array_merge($translations, $existing);
@@ -145,37 +144,12 @@ class TranslationExtractor
             ksort($translations);
         }
 
-        // Generate PHP array content
-        $content = "<?php\n\nreturn " . $this->varExport($translations, 1) . ";\n";
+        // Generate JSON content with pretty print and preserve Unicode characters
+        $content = json_encode($translations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
 
         $this->files->put($filePath, $content);
 
         return $filePath;
-    }
-
-    /**
-     * Custom var_export for better formatting.
-     */
-    protected function varExport(array $array, int $indent = 0): string
-    {
-        $output = "[\n";
-        $indentStr = str_repeat('    ', $indent);
-        
-        foreach ($array as $key => $value) {
-            $output .= $indentStr . "    " . var_export($key, true) . " => ";
-            
-            if (is_array($value)) {
-                $output .= $this->varExport($value, $indent + 1);
-            } else {
-                $output .= var_export($value, true);
-            }
-            
-            $output .= ",\n";
-        }
-        
-        $output .= $indentStr . "]";
-        
-        return $output;
     }
 
     /**

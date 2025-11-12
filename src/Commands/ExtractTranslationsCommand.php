@@ -22,7 +22,7 @@ class ExtractTranslationsCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Extract translation keys from views and generate language files';
+    protected $description = 'Extract translation keys from views and generate JSON language files';
 
     protected TranslationExtractor $extractor;
 
@@ -79,7 +79,7 @@ class ExtractTranslationsCommand extends Command
         $this->newLine();
 
         // Load saved translations to get accurate stats
-        $savedTranslations = include $filePath;
+        $savedTranslations = json_decode($files->get($filePath), true);
 
         // Display statistics
         $stats = $this->extractor->getStats($savedTranslations);

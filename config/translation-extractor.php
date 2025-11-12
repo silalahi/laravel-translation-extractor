@@ -7,20 +7,10 @@ return [
     |--------------------------------------------------------------------------
     |
     | The default locale for translation extraction. This will be used as
-    | the target language directory name.
+    | the JSON filename (e.g., 'id' creates lang/id.json).
     |
     */
     'locale' => 'id',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Translation File Name
-    |--------------------------------------------------------------------------
-    |
-    | The name of the PHP file where translations will be stored.
-    |
-    */
-    'file_name' => 'messages.php',
 
     /*
     |--------------------------------------------------------------------------
@@ -77,11 +67,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Auto Translate
+    | Preserve Existing Translations
     |--------------------------------------------------------------------------
     |
-    | If enabled, the package will attempt to preserve existing translations
-    | and only add new keys without translation values.
+    | If enabled, the package will preserve existing translations and only
+    | add new keys without translation values.
     |
     */
     'preserve_existing' => true,

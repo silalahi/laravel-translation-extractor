@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Laravel package that extracts translation keys from Blade views and PHP files, generating language files for localization. The package scans configured paths for translation function calls (`__()`, `trans()`, `@lang()`) and creates/updates PHP language files with the extracted keys.
+This is a Laravel package that extracts translation keys from Blade views and PHP files, generating language files for localization. The package scans configured paths for translation function calls (`__()`, `trans()`, `@lang()`) and creates/updates JSON language files with the extracted keys.
 
 ## Package Structure
 
@@ -15,7 +15,7 @@ This is a Laravel package that extracts translation keys from Blade views and PH
 
 **Configuration Flow:**
 The package uses a config file (`config/translation-extractor.php`) that controls:
-- Target locale and file name
+- Target locale (determines JSON filename: `lang/{locale}.json`)
 - Paths to scan (default: `resource_path('views')`)
 - Translation functions to detect (default: `__`, `trans`, `@lang`)
 - File extensions to scan (`.php`, `.blade.php`)
@@ -71,12 +71,13 @@ php artisan translations:extract --force
 4. Keys containing variables (`$`) or dots (`.`) are skipped to avoid dynamic translations
 5. Results are sorted alphabetically if configured
 6. Existing translations are merged (preserved) unless `--force` is used
-7. Output file is generated using custom `varExport()` for consistent formatting
+7. Output file is generated as JSON with pretty-print formatting and Unicode preservation
 
 **Translation File Output:**
-- Target path: `lang/{locale}/{file_name}` (e.g., `lang/id/messages.php`)
-- Format: PHP array with keys as translation strings and empty string values for untranslated items
+- Target path: `lang/{locale}.json` (e.g., `lang/id.json`)
+- Format: JSON object with keys as translation strings and empty string values for untranslated items
 - When `preserve_existing` is true, existing translated values are maintained and only new keys are added
+- Uses `JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE` flags for readable output with international characters
 
 **Pattern Matching:**
 The extraction uses two regex patterns per function:
@@ -96,8 +97,8 @@ Test categories:
 
 ## Important Conventions
 
-- All translation keys are stored as strings (no nested arrays)
+- All translation keys are stored as strings (no nested objects)
 - The package intentionally skips dynamic keys (containing variables or dots)
-- Generated files use 4-space indentation
+- Generated JSON files use pretty-print formatting with 4-space indentation
 - Statistics tracking helps users identify translation progress
 - The package never deletes existing translations by default (safety-first approach)

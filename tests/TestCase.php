@@ -19,7 +19,6 @@ abstract class TestCase extends Orchestra
         // Setup default configuration
         $app['config']->set('translation-extractor', [
             'locale' => 'id',
-            'file_name' => 'messages.php',
             'paths' => [
                 resource_path('views'),
             ],

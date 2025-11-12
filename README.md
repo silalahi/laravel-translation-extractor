@@ -71,32 +71,28 @@ __('I love programming.')
 trans('Good morning')
 ```
 
-It then generates a PHP array file in your `lang/{locale}` directory:
+It then generates a JSON file in your `lang` directory:
 
-```php
-// lang/id/messages.php
-<?php
-
-return [
-    'Good morning' => '',
-    'Hello World' => '',
-    'I love programming.' => '',
-    'Welcome to our website' => '',
-];
+```json
+// lang/id.json
+{
+    "Good morning": "",
+    "Hello World": "",
+    "I love programming.": "",
+    "Welcome to our website": ""
+}
 ```
 
 You can then add your translations:
 
-```php
-// lang/id/messages.php
-<?php
-
-return [
-    'Good morning' => 'Selamat pagi',
-    'Hello World' => 'Halo Dunia',
-    'I love programming.' => 'Saya suka pemrograman',
-    'Welcome to our website' => 'Selamat datang di website kami',
-];
+```json
+// lang/id.json
+{
+    "Good morning": "Selamat pagi",
+    "Hello World": "Halo Dunia",
+    "I love programming.": "Saya suka pemrograman",
+    "Welcome to our website": "Selamat datang di website kami"
+}
 ```
 
 ## Configuration
@@ -105,11 +101,8 @@ The `config/translation-extractor.php` file provides extensive configuration opt
 
 ```php
 return [
-    // Default locale for extraction
+    // Default locale for extraction (creates lang/{locale}.json)
     'locale' => 'id',
-
-    // Output file name
-    'file_name' => 'messages.php',
 
     // Directories to scan
     'paths' => [
@@ -188,7 +181,7 @@ php artisan translations:extract --locale=fr
 1. **Run Regularly**: Extract translations during development to catch new keys
 2. **Version Control**: Commit the generated files to track translation progress
 3. **CI/CD Integration**: Add extraction to your CI pipeline to ensure no keys are missed
-4. **Translation Services**: Export the generated PHP files to JSON for translation services
+4. **Translation Services**: The generated JSON files are compatible with most translation services
 5. **Keep Keys Simple**: Use clear, descriptive translation keys in English
 
 ## Example Output
@@ -206,7 +199,7 @@ php artisan translations:extract --locale=fr
    - Remember Me
    ... and 19 more
 
-💾 Translations saved to: /path/to/your/project/lang/id/messages.php
+💾 Translations saved to: /path/to/your/project/lang/id.json
 
 📊 Statistics:
 +--------------+-------+
@@ -218,7 +211,7 @@ php artisan translations:extract --locale=fr
 | Progress     | 75%   |
 +--------------+-------+
 
-💡 Tip: Edit /path/to/your/project/lang/id/messages.php to add translations for untranslated keys.
+💡 Tip: Edit /path/to/your/project/lang/id.json to add translations for untranslated keys.
 ```
 
 ## Testing
@@ -247,7 +240,6 @@ If you find this package helpful, please consider:
 ## Roadmap
 
 - [ ] Support for nested translation keys (dot notation)
-- [ ] Export to JSON format
 - [ ] Integration with translation services (Google Translate API, DeepL)
 - [ ] GUI for managing translations
 - [ ] Automatic translation using AI

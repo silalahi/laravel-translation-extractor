@@ -21,9 +21,9 @@ class ExtractTranslationsCommandTest extends TestCase
     protected function tearDown(): void
     {
         // Clean up test files
-        $langPath = lang_path('id');
-        if (File::isDirectory($langPath)) {
-            File::deleteDirectory($langPath);
+        $translationFile = lang_path('id.json');
+        if (File::exists($translationFile)) {
+            File::delete($translationFile);
         }
 
         parent::tearDown();
@@ -42,11 +42,11 @@ class ExtractTranslationsCommandTest extends TestCase
             ->assertExitCode(0);
 
         // Check if translation file was created
-        $translationFile = lang_path('id/messages.php');
+        $translationFile = lang_path('id.json');
         $this->assertFileExists($translationFile);
 
         // Check if translations were extracted
-        $translations = include $translationFile;
+        $translations = json_decode(File::get($translationFile), true);
         $this->assertArrayHasKey('Hello World', $translations);
         $this->assertArrayHasKey('Welcome', $translations);
 
@@ -66,13 +66,13 @@ class ExtractTranslationsCommandTest extends TestCase
             ->assertExitCode(0);
 
         // Check if translation file was created for Spanish
-        $translationFile = lang_path('es/messages.php');
+        $translationFile = lang_path('es.json');
         $this->assertFileExists($translationFile);
 
         // Clean up
         File::delete($viewPath);
-        if (File::isDirectory(lang_path('es'))) {
-            File::deleteDirectory(lang_path('es'));
+        if (File::exists(lang_path('es.json'))) {
+            File::delete(lang_path('es.json'));
         }
     }
 
@@ -80,11 +80,11 @@ class ExtractTranslationsCommandTest extends TestCase
     public function it_preserves_existing_translations()
     {
         // Create existing translation file
-        $langPath = lang_path('id');
-        File::makeDirectory($langPath, 0755, true);
-        
-        $translationFile = $langPath . '/messages.php';
-        File::put($translationFile, "<?php\n\nreturn [\n    'Existing Key' => 'Kunci yang Ada',\n];");
+        $translationFile = lang_path('id.json');
+        $existingTranslations = [
+            'Existing Key' => 'Kunci yang Ada',
+        ];
+        File::put($translationFile, json_encode($existingTranslations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         // Create a test view file with new key
         $viewPath = resource_path('views/test.blade.php');
@@ -95,7 +95,7 @@ class ExtractTranslationsCommandTest extends TestCase
             ->assertExitCode(0);
 
         // Check if existing translation was preserved
-        $translations = include $translationFile;
+        $translations = json_decode(File::get($translationFile), true);
         $this->assertEquals('Kunci yang Ada', $translations['Existing Key']);
         $this->assertArrayHasKey('New Key', $translations);
         $this->assertEquals('', $translations['New Key']);
