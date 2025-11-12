@@ -1,0 +1,53 @@
+{
+    "name": "silalahi/laravel-translation-extractor",
+    "description": "Extract translation keys from Blade views and generate language files",
+    "keywords": [
+        "laravel",
+        "translation",
+        "localization",
+        "i18n",
+        "extract"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jogi Silalahi",
+            "email": "silalahi.jogi@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0",
+        "illuminate/console": "^10.0|^11.0",
+        "illuminate/filesystem": "^10.0|^11.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Silalahi\\TranslationExtractor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Silalahi\\TranslationExtractor\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage",
+        "test-filter": "phpunit --filter"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Silalahi\\TranslationExtractor\\TranslationExtractorServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
