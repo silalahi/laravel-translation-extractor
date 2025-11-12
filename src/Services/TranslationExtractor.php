@@ -3,17 +3,27 @@
 namespace Silalahi\TranslationExtractor\Services;
 
 use Illuminate\Filesystem\Filesystem;
+use Silalahi\TranslationExtractor\Contracts\TranslationProviderInterface;
+use Silalahi\TranslationExtractor\Services\AI\TranslationProviderFactory;
 
 class TranslationExtractor
 {
     protected Filesystem $files;
     protected array $config;
     protected array $translations = [];
+    protected ?TranslationProviderInterface $aiProvider = null;
+    protected int $aiTranslatedCount = 0;
+    protected int $aiFailedCount = 0;
 
     public function __construct(Filesystem $files, array $config)
     {
         $this->files = $files;
         $this->config = $config;
+
+        // Initialize AI provider if enabled
+        if ($this->isAiEnabled()) {
+            $this->aiProvider = TranslationProviderFactory::make($config['ai_translation']);
+        }
     }
 
     /**
@@ -139,6 +149,11 @@ class TranslationExtractor
             }
         }
 
+        // AI Translation: Translate missing keys
+        if ($this->shouldTranslate()) {
+            $translations = $this->translateMissingKeys($translations, $locale);
+        }
+
         // Sort keys if configured
         if ($this->config['sort_keys']) {
             ksort($translations);
@@ -166,6 +181,132 @@ class TranslationExtractor
             'translated' => $translated,
             'untranslated' => $untranslated,
             'percentage' => $total > 0 ? round(($translated / $total) * 100, 2) : 0,
+            'ai_translated' => $this->aiTranslatedCount,
+            'ai_failed' => $this->aiFailedCount,
         ];
+    }
+
+    /**
+     * Check if AI translation is enabled and properly configured.
+     */
+    protected function isAiEnabled(): bool
+    {
+        return isset($this->config['ai_translation']['enabled']) &&
+               $this->config['ai_translation']['enabled'] === true;
+    }
+
+    /**
+     * Check if AI translation should be performed.
+     */
+    protected function shouldTranslate(): bool
+    {
+        return $this->aiProvider !== null &&
+               $this->aiProvider->isConfigured();
+    }
+
+    /**
+     * Translate keys with empty values using AI.
+     */
+    protected function translateMissingKeys(array $translations, string $locale): array
+    {
+        // Reset counters
+        $this->aiTranslatedCount = 0;
+        $this->aiFailedCount = 0;
+
+        // Find keys that need translation (empty values)
+        $keysToTranslate = [];
+        foreach ($translations as $key => $value) {
+            if (empty($value)) {
+                $keysToTranslate[] = $key;
+            }
+        }
+
+        if (empty($keysToTranslate)) {
+            return $translations;
+        }
+
+        $sourceLocale = $this->config['ai_translation']['source_locale'] ?? 'en';
+
+        // Group related keys if enabled
+        if ($this->config['ai_translation']['group_related_keys'] ?? false) {
+            $groups = $this->groupKeysByCategory($keysToTranslate);
+
+            foreach ($groups as $category => $keys) {
+                if (empty($keys)) {
+                    continue;
+                }
+
+                $textsToTranslate = array_combine($keys, $keys);
+                $translated = $this->aiProvider->translateBatch($textsToTranslate, $locale, $sourceLocale);
+
+                foreach ($translated as $key => $translatedValue) {
+                    if (!empty($translatedValue)) {
+                        $translations[$key] = $translatedValue;
+                        $this->aiTranslatedCount++;
+                    } else {
+                        $this->aiFailedCount++;
+                    }
+                }
+            }
+        } else {
+            // Translate all keys together
+            $textsToTranslate = array_combine($keysToTranslate, $keysToTranslate);
+            $translated = $this->aiProvider->translateBatch($textsToTranslate, $locale, $sourceLocale);
+
+            foreach ($translated as $key => $translatedValue) {
+                if (!empty($translatedValue)) {
+                    $translations[$key] = $translatedValue;
+                    $this->aiTranslatedCount++;
+                } else {
+                    $this->aiFailedCount++;
+                }
+            }
+        }
+
+        return $translations;
+    }
+
+    /**
+     * Group translation keys by category for consistent terminology.
+     */
+    protected function groupKeysByCategory(array $keys): array
+    {
+        $groups = [
+            'auth' => [],
+            'validation' => [],
+            'medical' => [],
+            'finance' => [],
+            'ui' => [],
+            'other' => [],
+        ];
+
+        foreach ($keys as $key) {
+            $category = $this->detectKeyCategory($key);
+            $groups[$category][] = $key;
+        }
+
+        return array_filter($groups);
+    }
+
+    /**
+     * Detect the category of a translation key based on patterns.
+     */
+    protected function detectKeyCategory(string $key): string
+    {
+        $patterns = [
+            'auth' => '/password|login|email|register|verify|logout|account|2fa|recovery|authentication/i',
+            'validation' => '/required|invalid|must|should|error|warning|confirm/i',
+            'medical' => '/patient|treatment|clinic|medicine|doctor|diagnosis|appointment|medical|health|prescription/i',
+            'finance' => '/payment|invoice|price|cost|bill|finance|sales|revenue|transaction|receipt/i',
+            'ui' => '/save|cancel|delete|update|create|search|back|continue|submit|edit|view|hide|show|settings|profile/i',
+        ];
+
+        foreach ($patterns as $category => $pattern) {
+            if (preg_match($pattern, $key)) {
+                return $category;
+            }
+        }
+
+        return 'other';
     }
 }

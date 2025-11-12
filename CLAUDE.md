@@ -79,6 +79,26 @@ php artisan translations:extract --force
 - When `preserve_existing` is true, existing translated values are maintained and only new keys are added
 - Uses `JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE` flags for readable output with international characters
 
+**AI Translation Flow (Optional, v0.3.0+):**
+1. After extraction and merging, if `--translate` flag is present and AI is configured:
+2. `TranslationExtractor::translateMissingKeys()` identifies keys with empty values
+3. Keys are optionally grouped by category (auth, medical, finance, ui, etc.) for consistent terminology
+4. `TranslationProviderFactory::make()` creates the appropriate provider (OpenAI, DeepL, or Google)
+5. Provider batches keys and calls respective AI API
+6. Translated values replace empty strings while preserving manually edited translations
+7. Statistics track AI-translated count and any failures
+
+**AI Translation Architecture (v0.3.0+):**
+- **Interface**: `Contracts/TranslationProviderInterface.php` - Common contract for all providers
+- **Base Class**: `Services/AI/AbstractTranslationProvider.php` - Shared logic (batching, error handling, retries)
+- **Factory**: `Services/AI/TranslationProviderFactory.php` - Creates provider instances based on config
+- **Providers**:
+  - `Services/AI/Providers/OpenAiProvider.php` - GPT-based translation with context awareness
+  - `Services/AI/Providers/DeepLProvider.php` - DeepL API integration
+  - `Services/AI/Providers/GoogleTranslateProvider.php` - Google Translate API integration
+- **Error Handling**: Graceful degradation - logs errors but continues with empty values
+- **Context Features**: Domain context and key grouping for consistent terminology
+
 **Pattern Matching:**
 The extraction uses two regex patterns per function:
 1. `{function}\s*\(\s*['"](.+?)['"]\s*\)` - Matches `__('key')` or `__("key")`

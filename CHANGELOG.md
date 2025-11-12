@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-01-12
+
+### Added
+- **AI-Powered Translation**: Automatically translate extracted keys using AI providers
+- Support for multiple AI providers: OpenAI (GPT-4/GPT-3.5), DeepL, and Google Translate
+- `--translate` flag to enable AI translation during extraction
+- Context-aware translation with domain-specific prompts
+- Intelligent key grouping for consistent terminology across related translations
+- Batch processing for API efficiency (configurable batch sizes)
+- Graceful error handling with detailed logging
+- AI translation statistics in command output (translated count, failed count)
+- Provider factory pattern for easy extensibility
+- Comprehensive AI translation configuration options
+
+### Changed
+- Extended statistics to include AI translation metrics
+- Enhanced command output to show AI translation status and warnings
+- Updated configuration file with AI translation settings
+
+### Technical Details
+- New `TranslationProviderInterface` for provider abstraction
+- `AbstractTranslationProvider` base class with shared batching and retry logic
+- Three provider implementations: `OpenAiProvider`, `DeepLProvider`, `GoogleTranslateProvider`
+- `TranslationProviderFactory` for dynamic provider instantiation
+- Context-aware key categorization (auth, medical, finance, ui, validation)
+- Retry logic with exponential backoff for API resilience
+- No new composer dependencies required (uses Laravel's built-in Http facade)
+
 ## [0.2.0] - 2025-01-12
 
 ### Changed
@@ -80,7 +108,8 @@ return [
 - Exclude path logic using relative paths to prevent false exclusions
 - Statistics calculation using saved translations instead of fresh extracts
 
-[Unreleased]: https://github.com/silalahi/laravel-translation-extractor/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/silalahi/laravel-translation-extractor/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/silalahi/laravel-translation-extractor/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/silalahi/laravel-translation-extractor/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/silalahi/laravel-translation-extractor/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/silalahi/laravel-translation-extractor/releases/tag/v0.1.0

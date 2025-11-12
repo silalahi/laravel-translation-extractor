@@ -15,7 +15,8 @@ class ExtractTranslationsCommand extends Command
      */
     protected $signature = 'translations:extract
                             {--locale= : The locale to extract translations for}
-                            {--force : Overwrite existing translations}';
+                            {--force : Overwrite existing translations}
+                            {--translate : Enable AI translation for empty keys}';
 
     /**
      * The console command description.
@@ -35,7 +36,7 @@ class ExtractTranslationsCommand extends Command
         $this->newLine();
 
         $config = config('translation-extractor');
-        
+
         // Override locale if provided
         if ($locale = $this->option('locale')) {
             $config['locale'] = $locale;
@@ -46,7 +47,19 @@ class ExtractTranslationsCommand extends Command
             $config['preserve_existing'] = false;
         }
 
+        // Enable AI translation if --translate flag is provided
+        if ($this->option('translate')) {
+            $config['ai_translation']['enabled'] = true;
+        }
+
         $this->extractor = new TranslationExtractor($files, $config);
+
+        // Show AI translation status if enabled
+        if ($config['ai_translation']['enabled'] ?? false) {
+            $provider = $config['ai_translation']['provider'] ?? 'openai';
+            $this->info("🤖 AI Translation enabled ({$provider})");
+            $this->newLine();
+        }
 
         // Extract translations
         $translations = $this->extractor->extract();
@@ -83,20 +96,33 @@ class ExtractTranslationsCommand extends Command
 
         // Display statistics
         $stats = $this->extractor->getStats($savedTranslations);
-        
+
         $this->info('📊 Statistics:');
-        $this->table(
-            ['Metric', 'Value'],
-            [
-                ['Total Keys', $stats['total']],
-                ['Translated', $stats['translated']],
-                ['Untranslated', $stats['untranslated']],
-                ['Progress', $stats['percentage'] . '%'],
-            ]
-        );
+
+        $tableData = [
+            ['Total Keys', $stats['total']],
+            ['Translated', $stats['translated']],
+            ['Untranslated', $stats['untranslated']],
+            ['Progress', $stats['percentage'] . '%'],
+        ];
+
+        // Add AI translation stats if applicable
+        if (($stats['ai_translated'] ?? 0) > 0 || ($stats['ai_failed'] ?? 0) > 0) {
+            $tableData[] = ['AI Translated', $stats['ai_translated']];
+            if ($stats['ai_failed'] > 0) {
+                $tableData[] = ['AI Failed', $stats['ai_failed']];
+            }
+        }
+
+        $this->table(['Metric', 'Value'], $tableData);
 
         $this->newLine();
-        
+
+        // Show warnings/tips
+        if (($stats['ai_failed'] ?? 0) > 0) {
+            $this->warn("⚠️  {$stats['ai_failed']} keys failed to translate (see logs for details)");
+        }
+
         if ($stats['untranslated'] > 0) {
             $this->comment('💡 Tip: Edit ' . $filePath . ' to add translations for untranslated keys.');
         } else {

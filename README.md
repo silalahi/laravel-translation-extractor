@@ -8,10 +8,12 @@ A Laravel package to automatically extract translation keys from your views and 
 ## Features
 
 - 🔍 **Automatic Extraction**: Scans your views for `__()`, `trans()`, and `@lang()` functions
+- 🤖 **AI-Powered Translation**: Automatically translate extracted keys using OpenAI, DeepL, or Google Translate
 - 🌍 **Multi-locale Support**: Generate translation files for any locale
 - 📁 **Configurable Paths**: Scan custom directories beyond just views
 - 🔄 **Preserve Existing**: Keeps your existing translations intact when re-running
 - 📊 **Statistics**: Shows translation progress and completion percentage
+- 🎯 **Context-Aware**: Groups related keys for consistent terminology
 - ⚙️ **Highly Configurable**: Customize function names, paths, and more
 
 ## Requirements
@@ -58,6 +60,50 @@ By default, existing translations are preserved. Use `--force` to overwrite:
 ```bash
 php artisan translations:extract --force
 ```
+
+### AI-Powered Translation
+
+Automatically translate extracted keys using AI providers:
+
+```bash
+php artisan translations:extract --locale=id --translate
+```
+
+**Supported Providers:**
+- OpenAI (GPT-4, GPT-3.5)
+- DeepL
+- Google Translate
+
+**Setup:**
+
+1. Add API keys to your `.env` file:
+
+```bash
+# For OpenAI
+TRANSLATION_AI_ENABLED=true
+TRANSLATION_AI_PROVIDER=openai
+OPENAI_API_KEY=sk-...
+
+# For DeepL
+TRANSLATION_AI_PROVIDER=deepl
+DEEPL_API_KEY=your-deepl-key
+
+# For Google Translate
+TRANSLATION_AI_PROVIDER=google
+GOOGLE_TRANSLATE_API_KEY=your-google-key
+```
+
+2. Optional: Add domain context for better accuracy:
+
+```bash
+TRANSLATION_AI_DOMAIN="medical clinic management"
+```
+
+**Features:**
+- Only translates keys with empty values (preserves manual edits)
+- Groups related keys for consistent terminology
+- Graceful error handling with detailed logs
+- Batch processing for API efficiency
 
 ## How It Works
 
@@ -239,9 +285,9 @@ If you find this package helpful, please consider:
 
 ## Roadmap
 
+- [x] Automatic translation using AI (OpenAI, DeepL, Google Translate) ✅
+- [x] Integration with translation services (OpenAI, DeepL, Google Translate) ✅
 - [ ] Support for nested translation keys (dot notation)
-- [ ] Integration with translation services (Google Translate API, DeepL)
 - [ ] GUI for managing translations
-- [ ] Automatic translation using AI
 - [ ] Support for pluralization rules
 - [ ] Vue.js and React component scanning
