@@ -17,7 +17,28 @@ abstract class TestCase extends Orchestra
     protected function getEnvironmentSetUp($app)
     {
         // Setup default configuration
-        $app['config']->set('translation-extractor.locale', 'id');
-        $app['config']->set('translation-extractor.file_name', 'messages.php');
+        $app['config']->set('translation-extractor', [
+            'locale' => 'id',
+            'file_name' => 'messages.php',
+            'paths' => [
+                resource_path('views'),
+            ],
+            'functions' => [
+                '__',
+                'trans',
+                '@lang',
+            ],
+            'extensions' => [
+                'php',
+                'blade.php',
+            ],
+            'exclude' => [
+                'vendor',
+                'node_modules',
+                'storage',
+            ],
+            'preserve_existing' => true,
+            'sort_keys' => true,
+        ]);
     }
 }

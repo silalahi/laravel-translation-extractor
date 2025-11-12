@@ -44,20 +44,28 @@ class TranslationExtractor
         $files = $this->files->allFiles($directory);
 
         foreach ($files as $file) {
-            // Check if file should be excluded
+            // Check if file should be excluded (relative to the scanned directory)
+            $relativePath = str_replace($directory, '', $file->getPathname());
+
+            $excluded = false;
             foreach ($this->config['exclude'] as $exclude) {
-                if (str_contains($file->getPathname(), DIRECTORY_SEPARATOR . $exclude . DIRECTORY_SEPARATOR)) {
-                    continue 2;
+                if (str_contains($relativePath, DIRECTORY_SEPARATOR . $exclude . DIRECTORY_SEPARATOR) ||
+                    str_starts_with($relativePath, DIRECTORY_SEPARATOR . $exclude . DIRECTORY_SEPARATOR)) {
+                    $excluded = true;
+                    break;
                 }
             }
 
+            if ($excluded) {
+                continue;
+            }
+
             // Check file extension
-            $extension = $file->getExtension();
-            $basename = $file->getBasename('.' . $extension);
-            
+            $fileName = $file->getFilename();
+
             $shouldScan = false;
             foreach ($this->config['extensions'] as $allowedExtension) {
-                if ($extension === $allowedExtension || $basename . '.' . $extension === $allowedExtension) {
+                if (str_ends_with($fileName, '.' . $allowedExtension)) {
                     $shouldScan = true;
                     break;
                 }

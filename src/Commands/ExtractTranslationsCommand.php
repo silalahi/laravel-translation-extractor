@@ -73,13 +73,16 @@ class ExtractTranslationsCommand extends Command
         $this->newLine();
 
         // Save translations
-        $filePath = $this->extractor->saveTranslations($translations, $config['locale']);
+        $filePath = $this->extractor->saveTranslations($translations);
 
         $this->info('💾 Translations saved to: ' . $filePath);
         $this->newLine();
 
+        // Load saved translations to get accurate stats
+        $savedTranslations = include $filePath;
+
         // Display statistics
-        $stats = $this->extractor->getStats($translations);
+        $stats = $this->extractor->getStats($savedTranslations);
         
         $this->info('📊 Statistics:');
         $this->table(
