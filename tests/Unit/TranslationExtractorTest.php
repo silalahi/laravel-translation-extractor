@@ -1,9 +1,9 @@
 <?php
 
-namespace YourVendor\TranslationExtractor\Tests\Unit;
+namespace Silalahi\TranslationExtractor\Tests\Unit;
 
-use YourVendor\TranslationExtractor\Tests\TestCase;
-use YourVendor\TranslationExtractor\Services\TranslationExtractor;
+use Silalahi\TranslationExtractor\Tests\TestCase;
+use Silalahi\TranslationExtractor\Services\TranslationExtractor;
 use Illuminate\Filesystem\Filesystem;
 
 class TranslationExtractorTest extends TestCase
