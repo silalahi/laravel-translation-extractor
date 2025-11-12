@@ -17,7 +17,7 @@ A Laravel package to automatically extract translation keys from your views and 
 ## Requirements
 
 - PHP 8.1 or higher
-- Laravel 10.0 or higher
+- Laravel 10.x, 11.x, or 12.x
 
 ## Installation
 
